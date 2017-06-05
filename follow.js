@@ -13,20 +13,18 @@ var params = {
 T.get('search/tweets', params, function(err, data, response) {
 	if (!err) {
 		data.statuses.map((tweet) => {
-			let id = {
-				id: tweet.id_str
-			}
+			let screen_name  = tweet.user.screen_name
 
-			T.post('favorites/create', id, function(err, response) {
+			T.post('friendships/create', {
+				screen_name
+			}, function(err, response) {
 				// If the favorite fails, log the error message
 				if (err) {
-					console.log(err[0].message);
+					console.error(err);
 				}
 				// If the favorite is successful, log the url of the tweet
 				else {
-					let username = response.user.screen_name;
-					let tweetId = response.id_str;
-					console.log('Favorited: ', `https://twitter.com/${username}/status/${tweetId}`)
+					console.log('Following: ', screen_name)
 				}
 			});
 		})
