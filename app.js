@@ -1,6 +1,5 @@
 var Twitter = require('twitter');
 var config = require('./config.js');
-
 var T = new Twitter(config);
 
 // Set up your search parameters
@@ -14,31 +13,22 @@ var params = {
 T.get('search/tweets', params, function(err, data, response) {
 	if (!err) {
 		data.statuses.map((tweet) => {
-			let id = {
-				id: tweet.id_str
-			}
-			
-			createFavoritePromise(id)
-			.catch(error => {
-				console.error('error : '+ error)
-			})
+			let id = { id: tweet.id_str }
+
+			T.post('favorites/create', id, function(err, response) {
+				// If the favorite fails, log the error message
+				if (err) {
+					console.log(err[0].message);
+				}
+				// If the favorite is successful, log the url of the tweet
+				else {
+					let username = response.user.screen_name;
+					let tweetId = response.id_str;
+					console.log('Favorited: ', `https://twitter.com/${username}/status/${tweetId}`)
+				}
+			});
 		})
 	} else {
 		console.error('Error searching for tweets: ', err);
 	}
 })
-
-function createFavoritePromise(id){
-	return new Promise((resolve, reject) => {
-		T.post('favorites/create', id, function(err, favorites){
-			if(err){
-				console.error(err)
-				reject(err)
-			} else {
-				let username = favorites.user.screen_name;
-				let tweetId = favorites.id_str;
-				resolve(console.log('Favorited: ', `https://twitter.com/${username}/status/${tweetId}`))
-			}
-		})
-	})
-}
